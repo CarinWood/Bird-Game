@@ -7,6 +7,29 @@ let clearCourse = ''
 let dieSound
 let collectSound
 
+class StartScene extends Phaser.Scene {
+  constructor() {
+    super('StartScene')
+  }
+
+  preload() {
+      this.load.image('sky', './assets/sky.png')
+  }
+
+  create() {
+    this.add.image(400, 300, 'sky');
+    this.add.text(310, 200, 'Bird Game', {fontSize: '35px', color: '#fff'})
+    this.add.text(235, 260, 'Click to start the game', {fontSize: '25px', color: '#fff'})
+
+    this.input.on('pointerdown', () => {
+				this.scene.stop();
+        this.scene.start("PlayScene");
+			})
+  }
+
+  
+}
+
 
 class PlayScene extends Phaser.Scene {
     constructor() {
@@ -145,9 +168,18 @@ function generateStars() {
 function hitBomb() {
     dieSound.play()
     this.physics.pause()
-    this.anims.pauseAll()
+    player.anims.stop('flying')
     gameover = true
     this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
+
+    setTimeout(() => {
+        this.scene.stop()
+        this.scene.start('StartScene')
+        score = 0
+        this.physics.resume()
+        gameover = false
+        player.anims.play('flying')
+    }, 3000)
 }
 
 function createBomb() {
@@ -169,7 +201,7 @@ const config = {
         gravity: { x:0, y:0 },
       }
     },
-    scene: [PlayScene],
+    scene: [StartScene, PlayScene],
   };
   
   const game = new Phaser.Game(config);
