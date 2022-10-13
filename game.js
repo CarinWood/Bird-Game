@@ -8,6 +8,8 @@ let clearCourse = ''
 let dieSound
 let collectSound
 let clouds = ''
+let cloud4 = ''
+let cloud5 = ''
 
 class StartScene extends Phaser.Scene {
   constructor() {
@@ -287,11 +289,13 @@ class LevelTwo extends Phaser.Scene {
       cloud.y = randomY
     }
 
+  
+
   update() {
 
-    this.moveCloud(this.cloud, 1)
-    this.moveCloud(this.cloud2, 2)
-    this.moveCloudReverse(this.cloud3, 3)
+    this.moveCloud(this.cloud, 2)
+    this.moveCloud(this.cloud2, 3)
+    this.moveCloudReverse(this.cloud3, 4)
 
 
     if(gameover) {
@@ -329,10 +333,11 @@ function collectGrape(player, grapes) {
 
   if(score === 200) {
     generateGrapes()
+    createCloud4()
 
   } else if (score === 250) {
     generateGrapes()
-    //createCloud3()
+    createCloud5()
   } 
 
   if (score === 300) {
@@ -341,6 +346,12 @@ function collectGrape(player, grapes) {
     player.anims.stop('fly')
     this.physics.pause()
     gameover = true
+    this.cloud.disableBody(true, true)
+    this.cloud2.disableBody(true, true)
+    this.cloud3.disableBody(true, true)
+    cloud4.disableBody(true, true)
+    cloud5.disableBody(true, true)
+  
 
   }
 
@@ -351,10 +362,13 @@ function generateGrapes() {
 }
 }
 
+
 function hitCloud() {
   dieSound.play()
   this.physics.pause()
   this.cloud.destroy()
+  this.cloud2.destroy()
+  this.cloud3.destroy()
   player.anims.stop('fly')
   gameover = true
   this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
@@ -369,21 +383,21 @@ function hitCloud() {
 }, 3000)
 }
 
-function generateClouds() {
-  let cloud = clouds.create(0, Phaser.Math.Between(30, 770), 'cloud_1').setScale(0.4);
-  cloud.body.setVelocity(Phaser.Math.Between(-350, 350), Phaser.Math.Between(-350, 350));
-  cloud.setCollideWorldBounds(true)
-  cloud.setBounce(1);     
-  }
 
-  function createCloud2() {
-    let cloud2 = clouds.create(0, Phaser.Math.Between(30, 770), 'cloud_2').setScale(0.45);
-    this.moveCloud(cloud2, 2)
+
+  function createCloud4() {
+    cloud4 = clouds.create(0 - 55, Phaser.Math.Between(30, 770), 'cloud_2').setScale(0.45);
+    cloud4.setCollideWorldBounds(true)
+    cloud4.body.setVelocity(Phaser.Math.Between(-350, 350), Phaser.Math.Between(-350, 350));
+    cloud4.setBounce(1)
   }
-  function createCloud3() {
-    cloud = clouds.create(0, Phaser.Math.Between(30, 770), 'cloud_3').setScale(0.28);
-   
+  function createCloud5() {
+    cloud5 = clouds.create(config.width + 78, Phaser.Math.Between(30, 770), 'cloud_3').setScale(0.45);
+    cloud5.setCollideWorldBounds(true)
+    cloud5.body.setVelocity(Phaser.Math.Between(-350, 350), Phaser.Math.Between(-350, 350));
+    cloud5.setBounce(1)
   }
+  
 
   
   
