@@ -1,4 +1,4 @@
-let score = 0
+let score = 150
 let stars = ''
 let grapes = ''
 let bombs = ''
@@ -25,7 +25,7 @@ class StartScene extends Phaser.Scene {
 
     this.input.on('pointerdown', () => {
 				this.scene.stop();
-        this.scene.start("PlayScene");
+        this.scene.start("LevelTwo");
 			})
   }
 
@@ -96,6 +96,8 @@ class PlayScene extends Phaser.Scene {
         //cursors
         this.cursors = this.input.keyboard.createCursorKeys();
       }
+
+    
     
     update() {
 
@@ -139,18 +141,10 @@ function collectStars(player, stars) {
     } else if (score === 100) {
       generateStars()
       createBomb()
-    } else if (score === 150) {
-      generateStars()
-      createBomb()
-    } else if (score === 200) {
-      generateStars()
-      createBomb()
-    } else if (score == 250) {
-      generateStars()
-      createBomb()
-    }
-
-    if (score === 20) {
+    } 
+  
+ 
+    if (score === 150) {
       clearCourse.play()
       this.add.text(300, 200, 'Course Clear!', {fontSize: '27px'})
       this.physics.pause()
@@ -221,6 +215,8 @@ class LevelTwo extends Phaser.Scene {
       this.load.image('cloud_3', './assets/Cloud_3.png')
   }
 
+
+
   create() {
       this.add.image(400, 300, 'sky')
       this.text = this.add.text(20, 20, 'score: ' + score, {fontSize: '22px', color: '#fff'})
@@ -228,6 +224,7 @@ class LevelTwo extends Phaser.Scene {
       //sounds
       collectSound = this.sound.add('collect')
       dieSound = this.sound.add('die')
+      clearCourse = this.sound.add('clear')
      
 
       //player
@@ -245,12 +242,14 @@ class LevelTwo extends Phaser.Scene {
 
       //Grapes
       grapes = this.physics.add.group()
-      grapes.create(200, 200, 'grape').setScale(1.9)
       generateGrapes()
 
       //Clouds
       clouds = this.physics.add.group()
-      generateClouds()
+      this.cloud = clouds.create(0, Phaser.Math.Between(30, 580), 'cloud_1').setScale(0.4);
+      this.cloud2 = clouds.create(-10, Phaser.Math.Between(30, 580), 'cloud_2').setScale(0.4);
+      this.cloud3 = clouds.create(config.width + 78, Phaser.Math.Between(30, 580), 'cloud_3').setScale(0.4);
+      // generateClouds()
      
       
       //colliders
@@ -262,7 +261,39 @@ class LevelTwo extends Phaser.Scene {
       this.cursors = this.input.keyboard.createCursorKeys();
     }
 
+    moveCloud(cloud, speed) {
+    cloud.x += speed; 
+    if(cloud.x > config.width + 55) {
+        this.resetCloudPos(cloud)
+    }  
+  }
+
+    moveCloudReverse(cloud, speed) {
+      cloud.x -= speed;
+      if(cloud.x < config.width - 860) {
+        this.resetReverseCloudPos(cloud)
+      }
+    }
+
+    resetCloudPos(cloud) {
+    cloud.x = 0;
+    let randomY = Phaser.Math.Between(0, config.height)
+    cloud.y = randomY
+  }
+
+    resetReverseCloudPos(cloud) {
+      cloud.x = config.width + 77
+      let randomY = Phaser.Math.Between(0, config.height -20)
+      cloud.y = randomY
+    }
+
   update() {
+
+    this.moveCloud(this.cloud, 1)
+    this.moveCloud(this.cloud2, 2)
+    this.moveCloudReverse(this.cloud3, 3)
+
+
     if(gameover) {
       return
     }
@@ -296,6 +327,23 @@ function collectGrape(player, grapes) {
   grapes.disableBody(true, true)
   collectSound.play()
 
+  if(score === 200) {
+    generateGrapes()
+
+  } else if (score === 250) {
+    generateGrapes()
+    //createCloud3()
+  } 
+
+  if (score === 300) {
+    clearCourse.play()
+    this.add.text(300, 200, 'Course Clear!', {fontSize: '27px'})
+    player.anims.stop('fly')
+    this.physics.pause()
+    gameover = true
+
+  }
+
 }
 function generateGrapes() {
   for (let i = 0; i < 5; i++) {
@@ -306,6 +354,7 @@ function generateGrapes() {
 function hitCloud() {
   dieSound.play()
   this.physics.pause()
+  this.cloud.destroy()
   player.anims.stop('fly')
   gameover = true
   this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
@@ -325,9 +374,16 @@ function generateClouds() {
   cloud.body.setVelocity(Phaser.Math.Between(-350, 350), Phaser.Math.Between(-350, 350));
   cloud.setCollideWorldBounds(true)
   cloud.setBounce(1);     
-    
-        
-      }
+  }
+
+  function createCloud2() {
+    let cloud2 = clouds.create(0, Phaser.Math.Between(30, 770), 'cloud_2').setScale(0.45);
+    this.moveCloud(cloud2, 2)
+  }
+  function createCloud3() {
+    cloud = clouds.create(0, Phaser.Math.Between(30, 770), 'cloud_3').setScale(0.28);
+   
+  }
 
   
   
