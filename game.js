@@ -425,20 +425,24 @@ function hitCloud() {
       this.load.image('cherry', './assets/cherry.png')
       this.load.atlas('bird', './assets/birdsheet.png', './assets/birdsheet.json')
       this.load.audio('coinSound', './assets/coinSound.mp3')
+      this.load.audio('hitsound', './assets/dying.mp3')
       this.load.atlas('bomb', './assets/bombheet.png', './assets/bombsheet.json')
       this.load.atlas('explode', './assets/explodesheet.png', './assets/explodesheet.json')
       
     }
 
     create() {
+      gameover = false
       this.add.image(400, 300, 'sky');
       this.text = this.add.text(20, 20, 'score: ' + score, {fontSize: '22px', color: '#fff'})
 
       //Sounds
       collectSound = this.sound.add('coinSound')
+      dieSound = this.sound.add('hitsound')
 
       player = this.physics.add.sprite(400, 300, 'bird').setScale(0.09);
       player.setCollideWorldBounds(true);
+     
       
       this.anims.create({
         key: 'flying',
@@ -451,17 +455,12 @@ function hitCloud() {
 
 
       //Cherries
-      cherries = this.physics.add.group()
+      cherries = this.physics.add.staticGroup()
       generateCherries()
 
       //Enemy 
 
-     
-    
-      //Phaser.Math.between(30, 770)
-     
-    
-     
+      burningbombs = this.physics.add.group()
       this.anims.create(
         {
           key: 'burning',
@@ -469,31 +468,28 @@ function hitCloud() {
           frameRate: 8,
           repeat: -1
       })
-   
       this.anims.create(
         {
-          key: 'exploading',
+          key: 'exp',
           frames: this.anims.generateFrameNames('explode', {prefix: 'explode', end: 6, zeroPad: 3}),
-          frameRate: 8,
-          repeat: 0,
+          frameRate: 10,
+          repeat: 0 
       })
 
    
-   
-      burningbombs = this.physics.add.group()
-      bomb1 = burningbombs.create(200, 200, 'bomb').setScale(1.4)
-      bomb2 = burningbombs.create(500, 200, 'bomb').setScale(1.4)
-      bomb3 = burningbombs.create(400, 200, 'bomb').setScale(1.4)
-     
 
-    
+      const bombLoop = this.time.addEvent({
+        delay: 600,
+        callback: bombGen,
+        loop: true
+     })
 
   
 
       //Colliders
       this.physics.add.overlap(cherries, player, collectCherry, null, this)
-      this.physics.add.overlap(burningbombs, player, hitbyBomb, null, this)
-      
+      this.physics.add.overlap(player, burningbombs, hitbyBomb, null, this)
+    
 
 
       //cursors
@@ -501,27 +497,11 @@ function hitCloud() {
 
     }
 
-    moveBomb(bomb, speed) {
-      bomb.y += speed; 
-      if(bomb.y > config.height + 10) {
-          this.resetBomb(bomb)
-      }  
-    }
-  
-      resetBomb(bomb) {
-      bomb.y = -10;
-      let randomX = Phaser.Math.Between(0, config.width)
-      bomb.x = randomX
-    }
+   
   
 
     update() {
-      this.moveBomb(bomb1, 2)
-      this.moveBomb(bomb3, 4)
-      this.moveBomb(bomb2, 3)
- 
- 
-   
+    
 
       if(gameover === true) {
           return
@@ -554,6 +534,7 @@ function hitCloud() {
 function generateCherries() {
   for (let i = 0; i < 5; i++) {
     cherries.create(Phaser.Math.Between(30, 770), Phaser.Math.Between(30, 570), 'cherry').setScale(1.5)
+    
 }
 }
 
@@ -571,23 +552,77 @@ function collectCherry(player, cherries) {
 
  }
 
- function hitbyBomb(player, bomb) {
-    player.anims.stop('flying')
-    gameover = true
-  
-    player.anims.play('exploading')
-
-
-
+ function bombGen() {
+    let bomb = burningbombs.create(Phaser.Math.Between(5, config.width -5), -5, 'bomb')
+      
+    sec = [1000, 1500, 2000, 2500]
+    
+    setTimeout(() => {
+        bomb.anims.play('exp')
+        setTimeout(() => {
+          bomb.destroy()
+        }, 500)
+        
+      }, sec[Math.floor(Math.random() * 4)])
+    
     
  }
-  
 
-function stopBomb(bomb) {
-  bomb.y -= 1
-}
+
+
+ 
+
+ function hitbyBomb(player, bomb) {
+    // gameover = true
+    // this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
+    // player.anims.stop('flying')
+    // dieSound.play()
+    // bomb.destroy()
+    // player.setCollideWorldBounds(false)   gameover = true
+    dieSound.play()
+    this.physics.pause()
+   bomb.destroy()
+ 
+    player.anims.stop('flying')
+    gameover = true
+    this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
+   
+ 
+
+    setTimeout(() => {
+            this.scene.stop()
+            this.scene.start('StartScene')
+            score = 0
+            gameover = false
+            player.anims.play('flying')
+            this.physics.resume()
+            }, 3000)
+
+
+ }
+    
+
+//  
+      
+//  }
+
+//  function moveBomb(bomb, speed) {
+//   bomb.y += speed; 
+//   if(bomb.y > config.height + 10) {
+//       this.resetBomb(bomb)
+//   }  
 
   
+// }
+
+//   function resetBomb(bomb) {
+//   bomb.y = -10;
+//   let randomX = Phaser.Math.Between(0, config.width)
+//   bomb.x = randomX
+// }
+
+
+
 const config = {
     type: Phaser.AUTO,
     width: 800,
@@ -595,7 +630,7 @@ const config = {
     physics: {
       default: 'arcade',
       arcade: {
-        gravity: { x:0, y:0 },
+        gravity: { x:0, y:200 },
       }
     },
     scene: [StartScene, PlayScene, LevelTwo, LevelThree],
