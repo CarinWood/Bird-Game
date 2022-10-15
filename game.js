@@ -426,6 +426,7 @@ function hitCloud() {
       this.load.atlas('bird', './assets/birdsheet.png', './assets/birdsheet.json')
       this.load.audio('coinSound', './assets/coinSound.mp3')
       this.load.audio('hitsound', './assets/dying.mp3')
+      this.load.audio('clearCourse', './assets/levelClear.mp3')
       this.load.atlas('bomb', './assets/bombheet.png', './assets/bombsheet.json')
       this.load.atlas('explode', './assets/explodesheet.png', './assets/explodesheet.json')
       
@@ -439,6 +440,7 @@ function hitCloud() {
       //Sounds
       collectSound = this.sound.add('coinSound')
       dieSound = this.sound.add('hitsound')
+      clearCourse = this.sound.add('clearCourse')
 
       player = this.physics.add.sprite(400, 300, 'bird').setScale(0.09);
       player.setCollideWorldBounds(true);
@@ -550,6 +552,21 @@ function collectCherry(player, cherries) {
     generateCherries()
   }
 
+  if(score === 450) {
+    clearCourse.play()
+    this.add.text(300, 200, 'Game Clear!', {fontSize: '27px'})
+    this.physics.pause()
+    player.anims.stop('flying')
+    gameover = true
+    
+
+    setTimeout(() => {
+        this.scene.stop();
+        this.scene.start("EndScene");
+    }, 3000)
+
+  }
+
  }
 
  function bombGen() {
@@ -573,16 +590,9 @@ function collectCherry(player, cherries) {
  
 
  function hitbyBomb(player, bomb) {
-    // gameover = true
-    // this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
-    // player.anims.stop('flying')
-    // dieSound.play()
-    // bomb.destroy()
-    // player.setCollideWorldBounds(false)   gameover = true
     dieSound.play()
     this.physics.pause()
-   bomb.destroy()
- 
+    bomb.destroy()
     player.anims.stop('flying')
     gameover = true
     this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
@@ -600,26 +610,22 @@ function collectCherry(player, cherries) {
 
 
  }
+
+
+ class EndScene extends Phaser.Scene {
+    constructor() {
+      super('EndScene')
+    }
+
+    preload() {
+      this.load.image('sky', './assets/sky.png')
+    }
+
+    create() {
+      this.add.image(800, 600, 'sky')
+    }
+ }
     
-
-//  
-      
-//  }
-
-//  function moveBomb(bomb, speed) {
-//   bomb.y += speed; 
-//   if(bomb.y > config.height + 10) {
-//       this.resetBomb(bomb)
-//   }  
-
-  
-// }
-
-//   function resetBomb(bomb) {
-//   bomb.y = -10;
-//   let randomX = Phaser.Math.Between(0, config.width)
-//   bomb.x = randomX
-// }
 
 
 
@@ -633,7 +639,7 @@ const config = {
         gravity: { x:0, y:200 },
       }
     },
-    scene: [StartScene, PlayScene, LevelTwo, LevelThree],
+    scene: [StartScene, PlayScene, LevelTwo, LevelThree, EndScene],
   };
   
   const game = new Phaser.Game(config);
