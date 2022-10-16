@@ -554,7 +554,7 @@ function collectCherry(player, cherries) {
 
   if(score === 450) {
     clearCourse.play()
-    this.add.text(300, 200, 'Game Clear!', {fontSize: '27px'})
+    this.add.text(0, 0, 'Game Clear!', {fontSize: '27px'})
     this.physics.pause()
     player.anims.stop('flying')
     gameover = true
@@ -571,8 +571,8 @@ function collectCherry(player, cherries) {
 
  function bombGen() {
     let bomb = burningbombs.create(Phaser.Math.Between(5, config.width -5), -5, 'bomb')
-      
-    sec = [1000, 1500, 2000, 2500]
+    bomb.anims.play('burning')
+    sec = [1000, 1500, 2000, 2200]
     
     setTimeout(() => {
         bomb.anims.play('exp')
@@ -622,7 +622,7 @@ function collectCherry(player, cherries) {
     }
 
     create() {
-      this.add.image(800, 600, 'sky')
+      this.add.image(0, 0, 'sky').setOrigin(0,0)
     }
  }
     
