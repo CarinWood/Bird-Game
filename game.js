@@ -1,4 +1,4 @@
-let score = 300
+let score = 0
 let stars = ''
 let grapes = ''
 let bombs = ''
@@ -9,7 +9,7 @@ let dieSound
 let collectSound
 let clouds = ''
 let cloud4 = ''
-let cherries = ''
+let cherries
 let burningbombs
 let bomb1
 let bomb2
@@ -33,7 +33,7 @@ class StartScene extends Phaser.Scene {
 
     this.input.on('pointerdown', () => {
 				this.scene.stop();
-        this.scene.start("LevelThree");
+        this.scene.start("EndScene");
 			})
   }
 
@@ -85,10 +85,11 @@ class PlayScene extends Phaser.Scene {
         this.text = this.add.text(20, 20, 'score: 0', {fontSize: '22px', color: '#fff'})
 
         //enemies
-        bombs = this.physics.add.group();
+        bombs = this.physics.add.group({ gravityY: 0 });
+      
         createBomb()
 
-        stars = this.physics.add.group();
+        stars = this.physics.add.staticGroup();
      
         for (let i = 0; i < 5; i++) {
             stars.create(Phaser.Math.Between(10, 790), Phaser.Math.Between(10, 590), 'star')
@@ -108,6 +109,7 @@ class PlayScene extends Phaser.Scene {
     
     
     update() {
+    
 
         if(gameover === true) {
             return
@@ -204,6 +206,7 @@ function createBomb() {
     bomb.body.setVelocity(Phaser.Math.Between(-350, 350), Phaser.Math.Between(-350, 350));
     bomb.setCollideWorldBounds(true)
     bomb.setBounce(1);
+    bomb.body.allowGravity = false
 }
 
 class LevelTwo extends Phaser.Scene {
@@ -249,14 +252,17 @@ class LevelTwo extends Phaser.Scene {
       player.anims.play('fly')
 
       //Grapes
-      grapes = this.physics.add.group()
+      grapes = this.physics.add.staticGroup()
       generateGrapes()
 
       //Clouds
       clouds = this.physics.add.group()
       this.cloud = clouds.create(0, Phaser.Math.Between(30, 580), 'cloud_1').setScale(0.4);
+      this.cloud.body.allowGravity = false
       this.cloud2 = clouds.create(-10, Phaser.Math.Between(30, 580), 'cloud_2').setScale(0.4);
+      this.cloud2.body.allowGravity = false
       this.cloud3 = clouds.create(config.width + 78, Phaser.Math.Between(30, 580), 'cloud_3').setScale(0.4);
+      this.cloud3.body.allowGravity = false
       // generateClouds()
      
       
@@ -339,7 +345,7 @@ function collectGrape(player, grapes) {
 
   if(score === 200) {
     generateGrapes()
-    createCloud4()
+
 
   } else if (score === 250) {
     generateGrapes()
@@ -355,7 +361,7 @@ function collectGrape(player, grapes) {
     this.cloud.disableBody(true, true)
     this.cloud2.disableBody(true, true)
     this.cloud3.disableBody(true, true)
-    cloud4.disableBody(true, true)
+   
 
 
     
@@ -405,12 +411,7 @@ function hitCloud() {
 
 
 
-  function createCloud4() {
-    cloud4 = clouds.create(-85, Phaser.Math.Between(30, 770), 'cloud_2').setScale(0.43);
-    cloud4.setCollideWorldBounds(true)
-    cloud4.body.setVelocity(Phaser.Math.Between(-350, 350), Phaser.Math.Between(-350, 350));
-    cloud4.setBounce(1)
-  }
+ 
 
   
 
@@ -427,7 +428,7 @@ function hitCloud() {
       this.load.audio('coinSound', './assets/coinSound.mp3')
       this.load.audio('hitsound', './assets/dying.mp3')
       this.load.audio('clearCourse', './assets/levelClear.mp3')
-      this.load.atlas('bomb', './assets/bombheet.png', './assets/bombsheet.json')
+      this.load.atlas('bom', './assets/bombheet.png', './assets/bombsheet.json')
       this.load.atlas('explode', './assets/explodesheet.png', './assets/explodesheet.json')
       
     }
@@ -447,55 +448,61 @@ function hitCloud() {
      
       
       this.anims.create({
-        key: 'flying',
-        frames: this.anims.generateFrameNames('bird', {prefix: 'flying', end: 2, zeroPad: 3}),
-        frameRate: 10,
-        repeat: -1,
+         key: 'flying',
+         frames: this.anims.generateFrameNames('bird', {prefix: 'flying', end: 2, zeroPad: 3}),
+         frameRate: 10,
+         repeat: -1,
       })
 
       player.anims.play('flying')
+      player.body.allowGravity = false
 
 
-      //Cherries
-      cherries = this.physics.add.staticGroup()
-      generateCherries()
+       //Cherries
+       cherries = this.physics.add.staticGroup()
+       generateCherries()
+  
+       //Enemy 
 
-      //Enemy 
-
-      burningbombs = this.physics.add.group()
-      this.anims.create(
+       burningbombs = this.physics.add.group()
+    
+       this.anims.create(
         {
-          key: 'burning',
-          frames: this.anims.generateFrameNames('bomb', {prefix: 'bomb', end: 3, zeroPad: 3}),
-          frameRate: 8,
-          repeat: -1
-      })
-      this.anims.create(
-        {
-          key: 'exp',
-          frames: this.anims.generateFrameNames('explode', {prefix: 'explode', end: 6, zeroPad: 3}),
-          frameRate: 10,
-          repeat: 0 
-      })
+           key: 'burning',
+           frames: this.anims.generateFrameNames('bom', {prefix: 'bomb', end: 3, zeroPad: 3}),
+           frameRate: 8,
+           repeat: -1
+       })
+       this.anims.create(
+         {
+           key: 'exp',
+           frames: this.anims.generateFrameNames('explode', {prefix: 'explode', end: 6, zeroPad: 3}),
+           frameRate: 10,
+           repeat: 0 
+       })
 
    
 
-      const bombLoop = this.time.addEvent({
-        delay: 600,
-        callback: bombGen,
-        loop: true
-     })
+      
+          const bombLoop = this.time.addEvent({
+            delay: 600,   
+            callback: bombGen,
+            loop: true
+         })
 
+    
   
 
       //Colliders
-      this.physics.add.overlap(cherries, player, collectCherry, null, this)
+
+    
+      this.physics.add.overlap(player, cherries, collectCherry, null, this)
       this.physics.add.overlap(player, burningbombs, hitbyBomb, null, this)
     
 
 
-      //cursors
-      this.cursors = this.input.keyboard.createCursorKeys();
+       //cursors
+       this.cursors = this.input.keyboard.createCursorKeys();
 
     }
 
@@ -504,28 +511,27 @@ function hitCloud() {
 
     update() {
     
-
-      if(gameover === true) {
-          return
-      }
+       if(gameover === true) {
+           return
+       }
  
-      if(this.cursors.left.isDown) {
-          player.setVelocityX(-500)
-          player.flipX = true;
-      } else if (this.cursors.right.isDown) {
-          player.setVelocityX(500)
-          player.flipX = false;
-      } else {
-          player.setVelocityX(0);
-      }
+       if(this.cursors.left.isDown) {
+           player.setVelocityX(-500)
+           player.flipX = true;
+       } else if (this.cursors.right.isDown) {
+           player.setVelocityX(500)
+           player.flipX = false;
+       } else {
+           player.setVelocityX(0);
+       }
 
-      if(this.cursors.up.isDown) {
-        player.setVelocityY(-500)
-      } else if (this.cursors.down.isDown) {
-        player.setVelocityY(500);
-      } else {
-        player.setVelocityY(0);
-      }
+       if(this.cursors.up.isDown) {
+         player.setVelocityY(-500)
+       } else if (this.cursors.down.isDown) {
+         player.setVelocityY(500);
+       } else {
+         player.setVelocityY(0);
+       }
   }
 
    
@@ -534,82 +540,94 @@ function hitCloud() {
 
 
 function generateCherries() {
-  for (let i = 0; i < 5; i++) {
-    cherries.create(Phaser.Math.Between(30, 770), Phaser.Math.Between(30, 570), 'cherry').setScale(1.5)
-    
-}
+    for (let i = 0; i < 5; i++) {
+          cherries.create(Phaser.Math.Between(30, 770), Phaser.Math.Between(30, 570), 'cherry').setScale(1.5)
+
+  }
+
 }
 
-function collectCherry(player, cherries) {
-  collectSound.play()
-  cherries.disableBody(true, true)
-  score += 10
-  this.text.setText('score: ' + score)
+ function collectCherry(player, cherry) {
+   collectSound.play()
+   cherry.disableBody(true, true)
+   score += 10
+   this.text.setText('score: ' + score)
+
+//   if (score === 300) {
+//     const bombLoop = this.time.addEvent({
+//       delay: 900,   
+//       callback: bombGen,
+//       loop: true
+//    })
+//   }
+
 
   if(score === 350) {
     generateCherries()
-  } else if (score === 400) {
-    generateCherries()
+
+   } else if (score === 400) {
+     generateCherries()
+   }
+ 
+
+   if(score === 450) {
+     clearCourse.play()
+     this.add.text(310, 200, 'Game Clear!', {fontSize: '27px'})
+     this.physics.pause()
+     player.anims.stop('flying')
+     gameover = true
+    
+     setTimeout(() => {
+         this.scene.stop();
+         this.scene.start("EndScene");
+     }, 3000)
+
+   }
+
   }
 
-  if(score === 450) {
-    clearCourse.play()
-    this.add.text(0, 0, 'Game Clear!', {fontSize: '27px'})
-    this.physics.pause()
-    player.anims.stop('flying')
-    gameover = true
-    
 
-    setTimeout(() => {
-        this.scene.stop();
-        this.scene.start("EndScene");
-    }, 3000)
-
-  }
-
- }
-
- function bombGen() {
-    let bomb = burningbombs.create(Phaser.Math.Between(5, config.width -5), -5, 'bomb')
-    bomb.anims.play('burning')
-    sec = [1000, 1500, 2000, 2200]
+  function bombGen() {
+     let bom = burningbombs.create(Phaser.Math.Between(5, config.width -5), -5, 'bom')
+     bom.anims.play('burning')
+     sec = [1000, 1500, 2000, 2200]
     
     setTimeout(() => {
-        bomb.anims.play('exp')
-        setTimeout(() => {
-          bomb.destroy()
-        }, 500)
+         bom.anims.play('exp')
+         setTimeout(() => {
+           bom.destroy()
+         }, 500)
         
-      }, sec[Math.floor(Math.random() * 4)])
+       }, sec[Math.floor(Math.random() * 4)])
+
     
-    
- }
+  }
 
 
 
  
 
- function hitbyBomb(player, bomb) {
-    dieSound.play()
-    this.physics.pause()
-    bomb.destroy()
-    player.anims.stop('flying')
-    gameover = true
-    this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
+  function hitbyBomb(player, bomb) {
+     dieSound.play()
+     this.physics.pause()
+     bomb.destroy()
+     player.anims.stop('flying')
+     gameover = true
+     this.add.text(310, 200, 'Game Over!', {fontSize: '27px'})
    
  
-
-    setTimeout(() => {
+     setTimeout(() => {
             this.scene.stop()
             this.scene.start('StartScene')
             score = 0
             gameover = false
             player.anims.play('flying')
             this.physics.resume()
-            }, 3000)
+             }, 3000)
 
 
- }
+  }
+  
 
 
  class EndScene extends Phaser.Scene {
@@ -619,10 +637,39 @@ function collectCherry(player, cherries) {
 
     preload() {
       this.load.image('sky', './assets/sky.png')
+      this.load.atlas('bird', './assets/birdsheet.png', './assets/birdsheet.json')
     }
 
     create() {
       this.add.image(0, 0, 'sky').setOrigin(0,0)
+      this.add.text(220, 200, 'Thank you for playing!', {fontSize: '27px'})
+      
+  
+
+      this.anims.create({
+        key: 'flax',
+        frames: this.anims.generateFrameNames('bird', {prefix: 'flying', end: 2, zeroPad: 3}),
+        frameRate: 10,
+        repeat: -1,
+      })
+
+      player = this.add.sprite(-8, 100, 'bird', 'flying001').setScale(0.09)
+      player.anims.play('flax')
+
+      this.bird = this.add.sprite(840, 440, 'bird', 'flying001').setScale(0.09)
+      this.bird.anims.play('flax')
+      
+
+    }
+
+    update() {
+    player.x += 3
+
+    setTimeout(() => {
+        this.bird.flipX = true
+        this.bird.x -= 3
+ 
+    }, 5000) 
     }
  }
     
