@@ -28,12 +28,14 @@ class StartScene extends Phaser.Scene {
 
   create() {
     this.add.image(400, 300, 'sky');
-    this.add.text(310, 200, 'Bird Game', {fontSize: '35px', color: '#fff'})
-    this.add.text(235, 260, 'Click to start the game', {fontSize: '25px', color: '#fff'})
+    this.add.text(260, 150, 'The Bird Game', {fontSize: '35px', color: '#fff'})
+    this.add.text(321, 210, 'by Carin Wood', {fontSize: '20px', color: '#fff'})
+    this.add.text(205, 310, '(Click to start the game)', {fontSize: '25px', color: '#fff'})
+    
 
     this.input.on('pointerdown', () => {
 				this.scene.stop();
-        this.scene.start("EndScene");
+        this.scene.start("PlayScene");
 			})
   }
 
@@ -257,7 +259,7 @@ class LevelTwo extends Phaser.Scene {
 
       //Clouds
       clouds = this.physics.add.group()
-      this.cloud = clouds.create(0, Phaser.Math.Between(30, 580), 'cloud_1').setScale(0.4);
+      this.cloud = clouds.create(-20, Phaser.Math.Between(30, 580), 'cloud_1').setScale(0.4);
       this.cloud.body.allowGravity = false
       this.cloud2 = clouds.create(-10, Phaser.Math.Between(30, 580), 'cloud_2').setScale(0.4);
       this.cloud2.body.allowGravity = false
@@ -553,17 +555,13 @@ function generateCherries() {
    score += 10
    this.text.setText('score: ' + score)
 
-//   if (score === 300) {
-//     const bombLoop = this.time.addEvent({
-//       delay: 900,   
-//       callback: bombGen,
-//       loop: true
-//    })
-//   }
-
-
   if(score === 350) {
     generateCherries()
+    const bombLoop = this.time.addEvent({
+             delay: 900,   
+             callback: bombGen,
+             loop: true
+          })
 
    } else if (score === 400) {
      generateCherries()
